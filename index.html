@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tiros de 3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: entrenamiento serio, directo, de vestuario
+   IDEA: la hoja de tiro del entrenador sobre el parqué
+   PICTURE: dos medias pistas con la línea de 3 y las casillas en cada posición
+   COLOUR and TYPE: parqué, naranja balón (spot up), verde azulado (situación real); Barlow Condensed + Barlow
+   LAYOUT: pestañas Registrar / Análisis; pistas apiladas en móvil, lado a lado en pantalla ancha */
+:root{color-scheme:light dark;
+--bg:light-dark(#fbf6ee,#14110e);--ink:light-dark(#1d1a16,#f3ece2);--mute:light-dark(#6d6359,#a99d8f);
+--card:light-dark(#ffffff,#1f1a16);--rule:light-dark(#e6dccd,#352d26);
+--wood:light-dark(#ecd3a8,#3b2c1d);--wood2:light-dark(#e2c493,#33261a);--line:light-dark(#fffaf2,#e9dcc8);
+--spot:#e8641f;--real:light-dark(#0f7471,#3cc1bb);--bad:light-dark(#b3261e,#ff8a80)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Barlow,system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:"Barlow Condensed",Barlow,sans-serif;font-weight:700;line-height:1.05;margin:0;text-wrap:balance}
+h1{font-size:clamp(32px,6vw,44px)}h2{font-size:26px}h3{font-size:20px}
+.band{padding:clamp(18px,3vw,40px) max(4vw,14px);max-width:1240px;margin:0 auto}
+header.band{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:end;justify-content:space-between;padding-bottom:8px}
+.tabs{display:flex;gap:6px;background:var(--card);border:1px solid var(--rule);border-radius:999px;padding:4px}
+.tabs a{min-height:44px;display:flex;align-items:center;padding:0 20px;border-radius:999px;color:var(--ink);text-decoration:none;font-weight:600}
+.tabs a[aria-current=page]{background:var(--ink);color:var(--bg)}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--mute);font-weight:600}
+input,select,button{font:inherit;font-size:16px;color:var(--ink)}
+input[type=date],select{min-height:44px;padding:0 12px;border:1px solid var(--rule);border-radius:10px;background:var(--card)}
+button{min-height:44px;padding:0 20px;border-radius:10px;border:1px solid var(--rule);background:var(--card);cursor:pointer;font-weight:600}
+button.go{background:var(--ink);color:var(--bg);border-color:var(--ink);padding:0 28px}
+:focus-visible{outline:3px solid var(--spot);outline-offset:2px}
+.courts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:20px;margin-top:18px}
+.card{background:var(--card);border:1px solid var(--rule);border-radius:16px;padding:16px}
+.card h2{display:flex;align-items:center;gap:10px}
+.dot{width:14px;height:14px;border-radius:50%;flex:none}
+.court{position:relative;aspect-ratio:530/335;margin-top:10px}
+.court svg{position:absolute;inset:0;width:100%;height:100%}
+.zone{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:2px}
+.zone input{width:58px;height:46px;text-align:center;font-weight:600;font-size:20px;border-radius:10px;border:2px solid var(--k);background:var(--card);-moz-appearance:textfield}
+.zone input::-webkit-inner-spin-button{display:none}
+.zone span{font-size:13px;font-weight:600;background:var(--card);border-radius:6px;padding:0 5px;line-height:1.4}
+.sum{margin-top:10px;color:var(--mute);font-size:15px}.sum b{color:var(--ink);font-size:18px}
+.msg{min-height:24px;font-weight:600;margin-top:10px}.msg.err{color:var(--bad)}
+.help{color:var(--mute);font-size:15px;max-width:70ch;margin:6px 0 0}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{min-height:40px;padding:0 14px;border-radius:999px;font-size:15px}
+.chip[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.filters{display:grid;gap:14px;margin-top:14px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:18px}
+.kpi{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:14px}
+.kpi b{display:block;font:700 clamp(30px,5vw,42px)/1 "Barlow Condensed",sans-serif}
+.kpi small{color:var(--mute);font-size:14px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:20px;margin-top:20px}
+.fig{position:relative;min-height:300px}.fig>svg{position:absolute;inset:0;width:100%;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px;margin-top:8px}.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.bars{display:grid;gap:10px;margin-top:12px}
+.bar{display:grid;grid-template-columns:7.5em 1fr 3.5em;gap:8px;align-items:center;font-size:15px}
+.bar .t{height:16px;background:var(--rule);border-radius:4px;overflow:hidden}.bar .t div{height:100%}
+.bar .v{text-align:right;font-weight:600;white-space:nowrap}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{padding:8px 6px;border-bottom:1px solid var(--rule);text-align:right;white-space:nowrap}
+th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}
+td button{min-height:36px;padding:0 10px;font-size:14px}
+.empty{color:var(--mute);padding:24px 0}
+pre,.scroll{overflow-x:auto}
+[hidden]{display:none!important}
+@media(max-width:600px){table{font-size:13px}}
+@media(prefers-reduced-motion:no-preference){.bar .t div{transition:width .4s ease}}
+</style>
+</head>
+<body>
+<header class="band">
+  <div><h1>Tiros de 3</h1><p class="help" style="margin:2px 0 0">Tiros extra hasta meter 10 desde cada posición</p></div>
+  <nav class="tabs"><a href="#registrar" id="t-reg">Registrar</a><a href="#analisis" id="t-ana">Análisis</a></nav>
+</header>
+
+<main>
+<section class="band" id="v-clave" hidden>
+  <form class="card" id="fClave" style="max-width:420px">
+    <h2>Código de acceso</h2>
+    <p class="help">Escríbelo una vez; este móvil lo recordará.</p>
+    <div class="row" style="margin-top:10px"><input id="clave" autocomplete="off" autocapitalize="characters" style="min-height:44px;padding:0 12px;border:1px solid var(--rule);border-radius:10px;background:var(--card);flex:1;text-transform:uppercase;letter-spacing:.1em" aria-label="Código de acceso"><button class="go">Entrar</button></div>
+    <p class="msg" id="msgClave" role="status"></p>
+  </form>
+</section>
+<section class="band" id="v-reg">
+  <div class="row">
+    <label class="f">Fecha de la sesión<input type="date" id="fecha"></label>
+    <button class="go" id="guardar" style="align-self:end">Guardar sesión</button>
+  </div>
+  <p class="help">En cada casilla, los tiros de más que hicieron falta para meter 10. Un 0 es 10 de 10; un 5 es 10 de 15.</p>
+  <p class="msg" id="msg" role="status"></p>
+  <div class="courts" id="courts"></div>
+</section>
+
+<section class="band" id="v-ana" hidden>
+  <div class="filters card">
+    <div class="row">
+      <label class="f">Desde<input type="date" id="desde"></label>
+      <label class="f">Hasta<input type="date" id="hasta"></label>
+      <button id="todo" style="align-self:end">Todas las fechas</button>
+    </div>
+    <div class="row"><span class="f" style="width:6em">Tipo</span><div class="chips" id="fTipo"></div></div>
+    <div class="row"><span class="f" style="width:6em">Posición</span><div class="chips" id="fPos"></div></div>
+  </div>
+  <div class="kpis" id="kpis"></div>
+  <div class="card" style="margin-top:20px">
+    <div class="row" style="justify-content:space-between">
+      <h2>Evolución del acierto</h2>
+      <label class="f">Separar por<select id="por"><option value="tipo">Tipo</option><option value="pos">Posición</option><option value="tot">Nada (total)</option></select></label>
+    </div>
+    <div class="fig"><svg id="line" role="img" aria-label="Evolución del porcentaje de acierto por fecha"></svg></div>
+    <div class="legend" id="lineLeg"></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><h2>Mapa de acierto</h2><div class="court" id="heat"></div></div>
+    <div class="card"><h2>Por posición y tipo</h2><div class="bars" id="bars"></div></div>
+  </div>
+  <div class="card" style="margin-top:20px">
+    <h2>Historial</h2>
+    <div class="scroll"><table id="hist"></table></div>
+  </div>
+</section>
+</main>
+
+<script>
+{
+const POS=[{k:'EI',n:'Esquina izq.',x:8,y:40},{k:'QI',n:'45° izq.',x:62,y:222},{k:'CE',n:'Central',x:225,y:292},{k:'QD',n:'45° der.',x:388,y:222},{k:'ED',n:'Esquina der.',x:442,y:40}];
+const TIPOS=[{k:'spot',n:'Spot up',c:'var(--spot)'},{k:'real',n:'Situación real',c:'var(--real)'}];
+const PCOL={EI:'#e8641f',QI:'#3a5bd9',CE:'#7a8a1e',QD:'#c2398a',ED:'#0f8f8a'};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pct=(made,shot)=>shot?Math.round(made/shot*1000)/10:null;
+const fmt=v=>v==null?'—':v.toLocaleString('es-ES',{maximumFractionDigits:1})+'%';
+const fdate=d=>{const[y,m,dd]=d.split('-');return dd+'/'+m+'/'+y.slice(2)};
+const today=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)};
+let sesiones=[],db=null,col=null;
+
+/* ---------- pista ---------- */
+const courtSVG=(extra='')=>`<svg viewBox="-40 0 530 335" aria-hidden="true">
+<rect x="-40" y="0" width="530" height="335" fill="var(--wood)"/>
+${[0,1,2,3,4,5,6,7].map(i=>`<rect x="-40" y="${i*42}" width="530" height="21" fill="var(--wood2)" opacity=".45"/>`).join('')}
+<g fill="none" stroke="var(--line)" stroke-width="3">
+<rect x="0" y="0" width="450" height="335"/>
+<rect x="151.5" y="0" width="147" height="174"/>
+<circle cx="225" cy="174" r="54"/>
+<path d="M27 0V89A202.5 202.5 0 0 0 423 89V0" stroke-width="4"/>
+<line x1="198" y1="36" x2="252" y2="36"/></g>
+<circle cx="225" cy="47" r="8" fill="none" stroke="var(--spot)" stroke-width="3"/>${extra}</svg>`;
+const L=p=>((p.x+40)/530*100)+'%',T=p=>(p.y/335*100)+'%';
+
+$('courts').innerHTML=TIPOS.map(t=>`<div class="card" style="--k:${t.c}">
+<h2><span class="dot" style="background:${t.c}"></span>${t.n}</h2>
+<div class="court">${courtSVG()}
+${POS.map(p=>`<div class="zone" style="left:${L(p)};top:${T(p)}"><input id="in-${t.k}-${p.k}" inputmode="numeric" pattern="[0-9]*" aria-label="${t.n}, ${p.n}: tiros extra" placeholder="–"><span id="pc-${t.k}-${p.k}">${p.k}</span></div>`).join('')}
+</div><div class="sum" id="sum-${t.k}"></div></div>`).join('');
+
+function leerForm(){const o={};for(const t of TIPOS){o[t.k]={};for(const p of POS){const v=$(`in-${t.k}-${p.k}`).value.trim();o[t.k][p.k]=v===''?null:Number(v)}}return o}
+function pintarForm(){const o=leerForm();for(const t of TIPOS){let made=0,shot=0;for(const p of POS){const v=o[t.k][p.k],el=$(`pc-${t.k}-${p.k}`);
+if(Number.isInteger(v)&&v>=0){made+=10;shot+=10+v;el.textContent=fmt(pct(10,10+v))}else el.textContent=p.k}
+$('sum-'+t.k).innerHTML=shot?`Metidos <b>${made}</b> de <b>${shot}</b> · <b>${fmt(pct(made,shot))}</b>`:'Sin datos todavía'}}
+document.querySelectorAll('.zone input').forEach(i=>i.addEventListener('input',()=>{i.value=i.value.replace(/\D/g,'').slice(0,3);pintarForm()}));
+
+function cargarFecha(){const f=$('fecha').value,s=sesiones.find(x=>x.fecha===f);
+for(const t of TIPOS)for(const p of POS)$(`in-${t.k}-${p.k}`).value=s&&s[t.k]&&s[t.k][p.k]!=null?s[t.k][p.k]:'';
+msg(s?'Ya hay datos de esta fecha: si guardas, se sustituyen.':'');pintarForm()}
+$('fecha').addEventListener('change',cargarFecha);
+function msg(t,err){$('msg').textContent=t;$('msg').className='msg'+(err?' err':'')}
+
+$('guardar').addEventListener('click',async()=>{
+  const f=$('fecha').value;if(!f)return msg('Elige la fecha.',1);
+  const o=leerForm();
+  for(const t of TIPOS)for(const p of POS){const v=o[t.k][p.k];if(!Number.isInteger(v)||v<0||v>300)return msg(`Falta un número válido en ${t.n}, ${p.n}.`,1)}
+  $('guardar').disabled=true;msg('Guardando…');
+  try{await rpc('tiros_guardar',{p_fecha:f,p_spot:o.spot,p_situacion:o.real});await cargar();msg('Sesión del '+fdate(f)+' guardada.')}
+  catch(e){msg(e.message==='clave'?'El código ya no es válido. Vuelve a entrar.':'No se pudo guardar. Revisa la conexión e inténtalo otra vez.',1)}
+  $('guardar').disabled=false});
+
+/* ---------- análisis ---------- */
+const fil={tipo:new Set(TIPOS.map(t=>t.k)),pos:new Set(POS.map(p=>p.k))};
+function chips(id,list,set){$(id).innerHTML=list.map(x=>`<button class="chip" data-k="${x.k}" aria-pressed="true">${x.n}</button>`).join('');
+$(id).addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const k=b.dataset.k;
+if(set.has(k)){if(set.size===1)return;set.delete(k)}else set.add(k);b.setAttribute('aria-pressed',set.has(k));analizar()})}
+chips('fTipo',TIPOS,fil.tipo);chips('fPos',POS,fil.pos);
+['desde','hasta','por'].forEach(i=>$(i).addEventListener('change',analizar));
+$('todo').addEventListener('click',()=>{$('desde').value='';$('hasta').value='';analizar()});
+
+function filas(){const d=$('desde').value,h=$('hasta').value,out=[];
+for(const s of sesiones){if(d&&s.fecha<d||h&&s.fecha>h)continue;
+for(const t of TIPOS){if(!fil.tipo.has(t.k)||!s[t.k])continue;for(const p of POS){if(!fil.pos.has(p.k))continue;const v=s[t.k][p.k];
+if(Number.isFinite(v))out.push({fecha:s.fecha,tipo:t.k,pos:p.k,made:10,shot:10+v})}}}return out}
+const agg=rs=>{let m=0,s=0;for(const r of rs){m+=r.made;s+=r.shot}return{m,s,p:pct(m,s)}};
+
+let lineData=null;
+function analizar(){const rs=filas(),a=agg(rs),fechas=[...new Set(rs.map(r=>r.fecha))].sort();
+$('kpis').innerHTML=[[fmt(a.p),'Acierto en la selección'],[a.s.toLocaleString('es-ES'),'Tiros lanzados'],[a.m.toLocaleString('es-ES'),'Tiros metidos'],[fechas.length,'Sesiones']]
+.map(([v,l])=>`<div class="kpi"><b>${v}</b><small>${l}</small></div>`).join('');
+const por=$('por').value;
+const series=por==='tipo'?TIPOS.filter(t=>fil.tipo.has(t.k)).map(t=>({n:t.n,c:t.c,f:r=>r.tipo===t.k}))
+:por==='pos'?POS.filter(p=>fil.pos.has(p.k)).map(p=>({n:p.n,c:PCOL[p.k],f:r=>r.pos===p.k})):[{n:'Total',c:'var(--ink)',f:()=>true}];
+lineData={fechas,series:series.map(s=>({...s,pts:fechas.map(f=>agg(rs.filter(r=>r.fecha===f&&s.f(r))).p)}))};
+$('lineLeg').innerHTML=series.map(s=>`<span><i style="background:${s.c}"></i>${s.n}</span>`).join('');
+drawLine();
+/* mapa */
+const hz=POS.map(p=>({p,a:agg(rs.filter(r=>r.pos===p.k))}));
+$('heat').innerHTML=courtSVG(hz.filter(z=>fil.pos.has(z.p.k)&&z.a.p!=null).map(z=>{const v=z.a.p,hue=Math.max(0,Math.min(120,(v-30)*2.4));
+return `<circle cx="${z.p.x}" cy="${z.p.y}" r="34" fill="hsl(${hue} 70% 45%)" opacity=".9"/><text x="${z.p.x}" y="${z.p.y+7}" text-anchor="middle" font-size="22" font-weight="700" fill="#fff" font-family="Barlow Condensed">${Math.round(v)}%</text>`}).join(''));
+if(!rs.length)$('heat').insertAdjacentHTML('beforeend','<p class="empty" style="position:absolute;inset:auto 0 0;text-align:center">Sin datos en la selección</p>');
+/* barras */
+$('bars').innerHTML=POS.filter(p=>fil.pos.has(p.k)).map(p=>`<div><h3 style="margin-top:4px">${p.n}</h3>${TIPOS.filter(t=>fil.tipo.has(t.k)).map(t=>{const x=agg(rs.filter(r=>r.pos===p.k&&r.tipo===t.k));
+return `<div class="bar"><span>${t.n}</span><div class="t"><div style="width:${x.p||0}%;background:${t.c}"></div></div><span class="v">${fmt(x.p)}</span></div>`}).join('')}</div>`).join('');
+/* historial */
+const hs=sesiones.filter(s=>(!$('desde').value||s.fecha>=$('desde').value)&&(!$('hasta').value||s.fecha<=$('hasta').value)).slice().sort((a,b)=>b.fecha.localeCompare(a.fecha));
+$('hist').innerHTML=hs.length?`<thead><tr><th>Fecha</th><th>Tipo</th>${POS.map(p=>`<th>${p.k}</th>`).join('')}<th>Acierto</th><th></th></tr></thead><tbody>`+
+hs.map(s=>TIPOS.map((t,i)=>{const v=s[t.k]||{},x=agg(POS.filter(p=>Number.isFinite(v[p.k])).map(p=>({made:10,shot:10+v[p.k]})));
+return `<tr><td>${i?'':fdate(esc(s.fecha))}</td><td>${t.n}</td>${POS.map(p=>`<td>${Number.isFinite(v[p.k])?v[p.k]:'—'}</td>`).join('')}<td><b>${fmt(x.p)}</b></td><td>${i?`<button data-del="${esc(s.fecha)}">Borrar</button>`:`<button data-ed="${esc(s.fecha)}">Editar</button>`}</td></tr>`}).join('')).join('')+'</tbody>'
+:'<tbody><tr><td class="empty">Todavía no hay sesiones. Empieza en Registrar.</td></tr></tbody>'}
+
+$('hist').addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;
+if(b.dataset.ed){$('fecha').value=b.dataset.ed;location.hash='registrar';cargarFecha();return}
+if(b.dataset.del){if(b.textContent!=='¿Seguro?'){b.textContent='¿Seguro?';setTimeout(()=>{b.textContent='Borrar'},4000);return}
+b.disabled=true;try{await rpc('tiros_borrar',{p_fecha:b.dataset.del});await cargar()}catch{b.disabled=false;b.textContent='Error'}}});
+
+const svgL=$('line');
+function drawLine(){if(!lineData)return;const W=svgL.clientWidth,H=svgL.clientHeight,{fechas,series}=lineData;
+if(!fechas.length){svgL.innerHTML=`<text x="${W/2}" y="${H/2}" text-anchor="middle" fill="var(--mute)" font-size="15">Sin datos en la selección</text>`;return}
+const all=series.flatMap(s=>s.pts).filter(v=>v!=null);let lo=Math.max(0,Math.floor((Math.min(...all)-5)/10)*10),hi=Math.min(100,Math.ceil((Math.max(...all)+5)/10)*10);if(hi-lo<20){lo=Math.max(0,hi-20)}
+const m={l:40,r:14,t:12,b:28},iw=W-m.l-m.r,ih=H-m.t-m.b,n=fechas.length;
+const X=i=>m.l+(n===1?iw/2:i*iw/(n-1)),Y=v=>m.t+ih-(v-lo)/(hi-lo)*ih;
+let g='';for(let v=lo;v<=hi;v+=10)g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--rule)"/><text x="${m.l-6}" y="${Y(v)+4}" text-anchor="end" font-size="13" fill="var(--mute)">${v}%</text>`;
+const every=Math.max(1,Math.ceil(n/(W<520?4:8)));
+fechas.forEach((f,i)=>{if(i%every===0||i===n-1&&n<4)g+=`<text x="${X(i)}" y="${H-8}" text-anchor="middle" font-size="13" fill="var(--mute)">${fdate(f).slice(0,5)}</text>`});
+for(const s of series){let d='',pen=false;s.pts.forEach((v,i)=>{if(v==null){pen=false;return}d+=(pen?'L':'M')+X(i)+' '+Y(v);pen=true});
+g+=`<path d="${d}" fill="none" stroke="${s.c}" stroke-width="2.5" stroke-linejoin="round"/>`+s.pts.map((v,i)=>v==null?'':`<circle cx="${X(i)}" cy="${Y(v)}" r="${n>40?2:4}" fill="${s.c}"><title>${s.n} · ${fdate(fechas[i])}: ${fmt(v)}</title></circle>`).join('')}
+svgL.innerHTML=g}
+const ro=new ResizeObserver(drawLine);ro.observe(svgL);
+
+/* ---------- navegación ---------- */
+function ruta(){if(!clave){$('v-clave').hidden=false;$('v-reg').hidden=$('v-ana').hidden=true;return}$('v-clave').hidden=true;
+const a=location.hash==='#analisis';$('v-reg').hidden=a;$('v-ana').hidden=!a;
+$('t-reg').toggleAttribute('aria-current',!a);$('t-ana').toggleAttribute('aria-current',a);
+if(a){$('t-ana').setAttribute('aria-current','page');analizar()}else $('t-reg').setAttribute('aria-current','page')}
+window.addEventListener('hashchange',ruta);
+
+/* ---------- datos ---------- */
+const SB='https://pxvjurbsisskhirulovk.supabase.co/rest/v1/rpc/',KEY='sb_publishable_yrxdVZ3_nA884ugAVcLlhg_8j3x6nVH';
+let clave='';try{clave=localStorage.getItem('tiros_clave')||''}catch{}
+async function rpc(fn,args){const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),12000);
+try{const r=await fetch(SB+fn,{method:'POST',signal:ctl.signal,headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify({p_clave:clave,...args})});
+const j=r.status===204?null:await r.json().catch(()=>null);
+if(!r.ok)throw new Error(j&&/clave_incorrecta/.test(j.message||'')?'clave':'red');return j}finally{clearTimeout(t)}}
+async function cargar(){const rows=await rpc('tiros_listar',{});
+sesiones=(rows||[]).map(r=>({fecha:r.fecha,spot:r.spot,real:r.situacion}));if(!$('v-ana').hidden)analizar()}
+async function entrar(){msg('Cargando tus datos…');
+try{await cargar();msg('');cargarFecha();ruta()}
+catch(e){if(e.message==='clave'){clave='';try{localStorage.removeItem('tiros_clave')}catch{}ruta();$('msgClave').textContent='Código incorrecto.';$('msgClave').className='msg err'}
+else msg('No llego a los datos; revisa la conexión y recarga.',1)}}
+$('fClave').addEventListener('submit',async e=>{e.preventDefault();clave=$('clave').value.trim().toUpperCase();if(!clave)return;
+$('msgClave').textContent='Comprobando…';$('msgClave').className='msg';
+try{await rpc('tiros_listar',{});try{localStorage.setItem('tiros_clave',clave)}catch{}$('msgClave').textContent='';entrar()}
+catch(err){$('msgClave').textContent=err.message==='clave'?'Código incorrecto.':'Sin conexión. Inténtalo de nuevo.';$('msgClave').className='msg err';clave=''}});
+$('fecha').value=today();pintarForm();ruta();if(clave)entrar();
+}
+</script>
+</body>
+</html>
